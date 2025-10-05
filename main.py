@@ -74,6 +74,33 @@ def handle_image(event):
         TextSendMessage(text="已收到圖片，已上傳 Firebase 🦥")
     )
 
+from linebot.models import ImageMessage
+import tempfile
+from datetime import datetime
+
+@handler.add(MessageEvent, message=ImageMessage)
+def handle_image(event):
+    # 從 LINE 下載圖片內容
+    message_content = line_bot_api.get_message_content(event.message.id)
+
+    # 暫存圖片
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        for chunk in message_content.iter_content():
+            temp_file.write(chunk)
+        temp_path = temp_file.name
+
+    # 上傳到 Firebase Storage
+    bucket = storage.bucket()
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    blob = bucket.blob(f"line_images/{event.message.id}_{now}.jpg")
+    blob.upload_from_filename(temp_path)
+
+    # 回覆用戶
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text="圖片已成功上傳 Firebase 🦥")
+    )
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # 從環境變數抓 port
