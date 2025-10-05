@@ -63,10 +63,10 @@ def handle_text(event):
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image(event):
     try:
-        # 1. 取得圖片內容（舊 SDK 方式）
+        # 1. 取得圖片內容
         message_content = line_bot_api.get_message_content(event.message.id)
 
-        # 2. 暫存檔案儲存圖片
+        # 2. 暫存圖片檔案
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             for chunk in message_content.iter_content():
                 temp_file.write(chunk)
@@ -77,9 +77,11 @@ def handle_image(event):
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
         blob_path = f"line_images/{event.message.id}_{now}.jpg"
         blob = bucket.blob(blob_path)
-        blob.upload_from_filename(temp_path)
+        blob.upload_from_filename(temp_path, content_type="image/jpeg")
         blob.make_public()
         public_url = blob.public_url
+
+        print(f"✅ 圖片已上傳至 Firebase：{public_url}")
 
         # 4. 回傳圖片訊息
         line_bot_api.reply_message(
@@ -89,7 +91,6 @@ def handle_image(event):
                 preview_image_url=public_url
             )
         )
-        print(f"✅ 圖片已上傳並回傳：{public_url}")
 
     except Exception as e:
         print(f"❌ 圖片處理錯誤：{e}")
