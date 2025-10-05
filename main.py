@@ -43,21 +43,25 @@ def handle_text(event):
         TextSendMessage(text=reply)
     )
 
-# 📷 回覆圖片訊息：下載 → 暫存 → 上傳 Firebase
+# 📷 處理圖片訊息：下載 → 暫存 → 上傳 Firebase
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image(event):
+    # 從 LINE 拿圖片內容
     message_content = line_bot_api.get_message_content(event.message.id)
 
+    # 存成暫存檔
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         for chunk in message_content.iter_content():
             temp_file.write(chunk)
         temp_path = temp_file.name
 
+    # 上傳到 Firebase Storage
     bucket = storage.bucket()
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
     blob = bucket.blob(f"line_images/{event.message.id}_{now}.jpg")
     blob.upload_from_filename(temp_path)
 
+    # 回覆使用者
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text="圖片已成功上傳 Firebase 🦥")
