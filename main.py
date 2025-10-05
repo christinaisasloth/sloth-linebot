@@ -1,3 +1,14 @@
+import firebase_admin
+from firebase_admin import credentials, storage
+import json, os
+
+firebase_key = os.environ.get("FIREBASE_KEY_JSON")
+cred = credentials.Certificate(json.loads(firebase_key))
+
+firebase_admin.initialize_app(cred, {
+    'storageBucket': '你的-bucket名稱.appspot.com'  # ✅ 請改成你自己的
+})
+
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
