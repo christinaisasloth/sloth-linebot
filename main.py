@@ -19,7 +19,6 @@ firebase_admin.initialize_app(cred, {
 
 # 🔧 建立 Flask 應用
 app = Flask(__name__)
-
 line_bot_api = LineBotApi(os.getenv("CHANNEL_ACCESS_TOKEN"))
 handler = WebhookHandler(os.getenv("CHANNEL_SECRET"))
 
@@ -45,26 +44,4 @@ def handle_message(event):
     )
 
 # 📷 處理圖片訊息並上傳 Firebase
-@handler.add(MessageEvent, message=ImageMessage)
-def handle_image(event):
-    message_content = line_bot_api.get_message_content(event.message.id)
-
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        for chunk in message_content.iter_content():
-            temp_file.write(chunk)
-        temp_path = temp_file.name
-
-    bucket = storage.bucket()
-    now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    blob = bucket.blob(f"line_images/{event.message.id}_{now}.jpg")
-    blob.upload_from_filename(temp_path)
-
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text="圖片已成功上傳 Firebase 🦥")
-    )
-
-# 🚀 啟動應用
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+@handler.a
