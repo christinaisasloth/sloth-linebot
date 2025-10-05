@@ -1,11 +1,18 @@
 import firebase_admin
 from firebase_admin import credentials, storage
+import json
+import os
 
-cred = credentials.Certificate("path/to/your/serviceAccountKey.json")  # 換成你的金鑰路徑
+# 🔑 讀取金鑰 JSON 內容（從環境變數中）
+firebase_key_str = os.getenv("FIREBASE_KEY_JSON")  # 環境變數裡是一段字串
+firebase_key_dict = json.loads(firebase_key_str)   # 轉成字典
 
+# 🔐 初始化 Firebase Admin
+cred = credentials.Certificate(firebase_key_dict)
 firebase_admin.initialize_app(cred, {
-    'storageBucket': 'sloth-bot-8d917.appspot.com'  # ✅ 請填這個
+    'storageBucket': 'sloth-bot-8d917.appspot.com'
 })
+
 
 
 from flask import Flask, request, abort
