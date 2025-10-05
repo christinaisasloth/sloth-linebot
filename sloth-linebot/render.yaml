@@ -3,7 +3,7 @@ services:
     name: sloth-linebot
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
+    startCommand: python sloth-linebot/main.py
     envVars:
       - key: CHANNEL_SECRET
         sync: false
