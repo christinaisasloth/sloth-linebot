@@ -3,6 +3,8 @@ line-bot-sdk==2.4.1
 firebase-admin
 imagehash
 pillow
+aiohttp==3.8.6
+
 
 
 
