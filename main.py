@@ -1,14 +1,12 @@
 import firebase_admin
 from firebase_admin import credentials, storage
-import json, os
 
-firebase_key = os.environ.get("FIREBASE_KEY_JSON")
-cred = credentials.Certificate(json.loads(firebase_key))
+cred = credentials.Certificate("path/to/your/serviceAccountKey.json")  # 換成你的金鑰路徑
 
 firebase_admin.initialize_app(cred, {
-    'storageBucket': 'gs://sloth-bot-8d917.appspot.com
-'  # ✅ 請改成你自己的
+    'storageBucket': 'sloth-bot-8d917.appspot.com'  # ✅ 請填這個
 })
+
 
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
