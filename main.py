@@ -27,9 +27,9 @@ firebase_admin.initialize_app(cred, {
 app = Flask(__name__)
 line_bot_api = LineBotApi(os.getenv("CHANNEL_ACCESS_TOKEN"))
 handler = WebhookHandler(os.getenv("CHANNEL_SECRET"))
-blob_client = MessagingApiBlob(os.getenv("CHANNEL_ACCESS_TOKEN"))  # 新增 blob 客戶端
+blob_client = MessagingApiBlob(os.getenv("CHANNEL_ACCESS_TOKEN"))  # 新版 get_message_content 客戶端
 
-# === 🛠️ Home route，Render 保活用 ===
+# === 🛠️ Home route（Render 保活 ping 用） ===
 @app.route("/", methods=["GET"])
 def home():
     return "LINE Bot is running."
@@ -45,9 +45,10 @@ def callback():
     except Exception as e:
         print(f"❌ Webhook error: {e}")
         abort(400)
+
     return "OK"
 
-# === 💬 處理文字訊息 ===
+# === 💬 文字訊息回覆 ===
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text(event):
     user_text = event.message.text
@@ -57,20 +58,20 @@ def handle_text(event):
         TextSendMessage(text=reply_text)
     )
 
-# === 🖼️ 處理圖片訊息並上傳 Firebase Storage ===
+# === 🖼️ 圖片訊息接收、上傳 Firebase 並回傳 ===
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image(event):
     try:
-        # 1. 從 LINE 拿圖片內容（新版方法）
+        # 1. 從 LINE 拿圖片
         message_content = blob_client.get_message_content(event.message.id)
 
-        # 2. 存成暫存檔案
+        # 2. 存到暫存檔
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             for chunk in message_content.iter_content():
                 temp_file.write(chunk)
             temp_path = temp_file.name
 
-        # 3. 上傳至 Firebase
+        # 3. 上傳 Firebase Storage
         bucket = storage.bucket()
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
         blob_path = f"line_images/{event.message.id}_{now}.jpg"
@@ -79,7 +80,7 @@ def handle_image(event):
         blob.make_public()
         public_url = blob.public_url
 
-        # 4. 回傳圖片訊息
+        # 4. 回傳圖片給使用者
         line_bot_api.reply_message(
             event.reply_token,
             ImageSendMessage(
@@ -95,10 +96,11 @@ def handle_image(event):
             TextSendMessage(text="圖片處理失敗了，請稍後再試 🥺")
         )
 
-# === 🔁 啟動 Flask App（Render 會自動啟動） ===
+# === 🚀 啟動伺服器（Render 會自動執行） ===
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
