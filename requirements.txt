@@ -1,9 +1,10 @@
 flask
 line-bot-sdk==2.4.1
-aiohttp==3.9.5
+aiohttp==3.8.3
 firebase-admin
 imagehash
 pillow
+
 
 
 
