@@ -16,7 +16,7 @@ if not os.path.exists(firebase_key_path):
 
 cred = credentials.Certificate(firebase_key_path)
 firebase_admin.initialize_app(cred, {
-    'storageBucket': '你的專案-id.appspot.com'  # ✅←請務必替換為你的 Firebase Storage bucket 名稱
+    'storageBucket': 'sloth-bot-8d917.appspot.com'  # ✅←請務必替換為你的 Firebase Storage bucket 名稱
 })
 bucket = storage.bucket()
 
