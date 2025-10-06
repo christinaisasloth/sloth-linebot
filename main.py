@@ -9,14 +9,15 @@ import firebase_admin
 from firebase_admin import credentials, storage
 
 # ====== 初始化 Firebase（讀取 Secret File） ======
-firebase_key_path = "/etc/secrets/FIREBASE_KEY"  # Render Secret Files 預設路徑
+firebase_key_path = "/etc/secrets/FIREBASE_KEY"  # Render Secret Files 預設掛載路徑
+
 if not os.path.exists(firebase_key_path):
     raise RuntimeError("❌ 找不到 FIREBASE_KEY，請確認 Render Secret Files 已設定正確")
 
 cred = credentials.Certificate(firebase_key_path)
 
 firebase_admin.initialize_app(cred, {
-    'storageBucket': '你的專案-id.appspot.com'  # ← 請替換為你的 Firebase bucket 名稱
+    'storageBucket': 'sloth-bot-8d917.appspot.com'  # ✅ 替換為你的 Firebase 專案 ID
 })
 bucket = storage.bucket()
 
@@ -62,7 +63,7 @@ def handle_image_message(event):
 
         print(f"✅ 上傳 Firebase 成功：{blob.public_url}")
 
-        # 回覆使用者圖片連結
+        # 回覆圖片公開網址給使用者
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=f"圖片已上傳成功 ✅\n👉 {blob.public_url}")
@@ -79,3 +80,7 @@ def handle_image_message(event):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
+
+
+        
