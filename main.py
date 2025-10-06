@@ -1,5 +1,4 @@
 import os
-import json
 import uuid
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
@@ -9,16 +8,15 @@ from linebot.models import MessageEvent, ImageMessage, TextSendMessage
 import firebase_admin
 from firebase_admin import credentials, storage
 
-# ====== 初始化 Firebase ======
-firebase_key = os.environ.get("FIREBASE_KEY")
-if not firebase_key:
-    raise RuntimeError("❌ 無法找到 FIREBASE_KEY，請確認 Render 的 Secret 已設定")
+# ====== 初始化 Firebase（讀取 Secret File） ======
+firebase_key_path = "/etc/secrets/FIREBASE_KEY"  # Render Secret Files 預設路徑
+if not os.path.exists(firebase_key_path):
+    raise RuntimeError("❌ 找不到 FIREBASE_KEY，請確認 Render Secret Files 已設定正確")
 
-cred_dict = json.loads(firebase_key)
-cred = credentials.Certificate(cred_dict)
+cred = credentials.Certificate(firebase_key_path)
 
 firebase_admin.initialize_app(cred, {
-    'storageBucket': '你的專案-id.appspot.com'  # ← 請替換為你的 Firebase bucket 名稱（例如 sloth-bot-xxxx.appspot.com）
+    'storageBucket': '你的專案-id.appspot.com'  # ← 請替換為你的 Firebase bucket 名稱
 })
 bucket = storage.bucket()
 
@@ -60,11 +58,11 @@ def handle_image_message(event):
         # 上傳圖片到 Firebase Storage
         blob = bucket.blob(f"images/{filename}")
         blob.upload_from_filename(file_path)
-        blob.make_public()  # 如果你希望圖片 URL 可直接公開訪問
+        blob.make_public()
 
         print(f"✅ 上傳 Firebase 成功：{blob.public_url}")
 
-        # 回覆使用者圖片連結（或固定文字）
+        # 回覆使用者圖片連結
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=f"圖片已上傳成功 ✅\n👉 {blob.public_url}")
@@ -81,7 +79,3 @@ def handle_image_message(event):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
